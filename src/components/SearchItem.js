@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import XMLParser from 'react-xml-parser';
 
 export default function SearchItem(props) {
     const [url, setUrl] = useState("");
@@ -9,23 +10,44 @@ export default function SearchItem(props) {
     const [isLike, setLike] = useState(props.fav);
 
     function fetchDetails() {
-        fetch(`https://api.factmaven.com/xml-to-json/?xml=` +
-            `https://boardgamegeek.com/xmlapi2/thing?id=${props.id}`)
+        fetch(`https://boardgamegeek.com/xmlapi2/thing?id=${props.id}`)
             .then(res => res.text())
             .then(dat => {
-                const boardGame = JSON.parse(dat).items.item;
-                boardGame.thumbnail ? setUrl(boardGame.thumbnail) : setUrl("");
-                setAge(boardGame.minage.value);
-                setYear(boardGame.yearpublished.value);
-                if (boardGame.minplayers.value === boardGame.maxplayers.value) {
-                    setPlayers(boardGame.minplayers.value);
+                var xml = new XMLParser().parseFromString(dat);
+                var attributes = xml.children[0].children;
+                var minPlayers = 0;
+                var maxPlayers = 0;
+
+                attributes.forEach(function(attr) {
+                    var name = attr.name;
+                    switch (name) {
+                        case "thumbnail":
+                            attr.value ? setUrl(attr.value) : setUrl("");
+                            break;
+                        case "minage":
+                            setAge(attr.attributes.value);
+                            break;
+                        case "yearpublished":
+                            setYear(attr.attributes.value);
+                            break;
+                        case "minplayers":
+                            minPlayers = attr.attributes.value;
+                            break;
+                        case "maxplayers":
+                            maxPlayers = attr.attributes.value;
+                            break;
+                        case "playingtime":
+                            setPlayTime(attr.attributes.value + " mins");
+                            break;
+                        default:
+                            break;
+                    }
+                });
+
+                if (minPlayers === maxPlayers) {
+                    setPlayers(minPlayers);
                 } else {
-                    setPlayers(boardGame.minplayers.value + " - " + boardGame.maxplayers.value);
-                }
-                if (boardGame.minplaytime.value === boardGame.maxplaytime.value) {
-                    setPlayTime(boardGame.minplaytime.value + " mins");
-                } else {
-                    setPlayTime(boardGame.minplaytime.value + " - " + boardGame.maxplaytime.value + " mins");
+                    setPlayers(minPlayers + " - " + maxPlayers);
                 }
             })
     }

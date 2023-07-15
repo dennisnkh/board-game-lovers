@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import SearchItem from "./SearchItem";
 import FavItem from "./FavItem";
 import NavBar from './NavBar';
+import XMLParser from 'react-xml-parser';
 
 export default function Home() {
 
@@ -97,19 +98,19 @@ export default function Home() {
     function handleSubmit(e) {
         e.preventDefault();
         const query = name.trim().replace(" ", "&");
-        fetch(`https://api.factmaven.com/xml-to-json/?xml=` +
-            `https://boardgamegeek.com/xmlapi2/search?type=boardgame%26query=${query}`)
+        fetch(`https://boardgamegeek.com/xmlapi2/search?type=boardgame&query=${query}`)
             .then(response => response.text())
             .then(data => {
-                if (JSON.parse(data).items.total === "0") {
+                var xml = new XMLParser().parseFromString(data);
+                if (xml.attributes.total === '0') {
                     alert("No results found, Please try again.");
                 }
                 else {
-                    const results = JSON.parse(data).items.item.slice(0, 10);
+                    const results = xml.children.slice(0, 10);
                     const searchList = results.map(result => (
                         {
-                            id: result.id,
-                            name: result.name.value
+                            id: result.attributes.id,
+                            name: result.children[0].attributes.value
                         }
                     ));
                     setItems(searchList);
@@ -134,15 +135,15 @@ export default function Home() {
     });
 
     useEffect(() => {
-        fetch(`https://api.factmaven.com/xml-to-json/?xml=` +
-            `https://boardgamegeek.com/xmlapi2/hot?type=boardgame`)
+        fetch(`https://boardgamegeek.com/xmlapi2/hot?type=boardgame`)
             .then(response => response.text())
             .then(data => {
-                const results = JSON.parse(data).items.item.slice(0, 10);
+                var xml = new XMLParser().parseFromString(data);
+                const results = xml.children.slice(0, 10);
                 const searchList = results.map(result => (
                     {
-                        id: result.id,
-                        name: result.name.value
+                        id: result.attributes.id,
+                        name: result.children[1].attributes.value
                     }
                 ));
                 setItems(searchList);

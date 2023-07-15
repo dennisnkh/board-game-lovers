@@ -34,7 +34,6 @@ export default function About() {
                 - Click heart button to remove item from list<br />
                 - Favourite list is stored in your browser<br /><br />
                 <u>Sources</u><br />
-                (XML To JSON API)&nbsp;<a href="https://github.com/factmaven/xml-to-json">Factmaven</a><br />
                 (Fonts)&nbsp;<a href="https://fonts.google.com/">Google Fonts</a><br />
                 (Icons)&nbsp;<a href="https://fontawesome.com/">Font Awesome</a>
             </p>
